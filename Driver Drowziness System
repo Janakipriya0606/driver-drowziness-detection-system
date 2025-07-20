@@ -1,0 +1,42 @@
+// Pin Definitions
+const int eyeSensorPin = 2;  // Eye Blink Sensor connected to digital pin 2
+const int buzzerPin = 9;     // Buzzer connected to digital pin 9
+const int ledPin = 13;       // LED connected to digital pin 13
+
+unsigned long eyeClosedStart = 0;
+bool eyePreviouslyClosed = false;
+
+void setup() {
+  pinMode(eyeSensorPin, INPUT);   // Sensor output
+  pinMode(buzzerPin, OUTPUT);     // Buzzer output
+  pinMode(ledPin, OUTPUT);        // LED output
+
+  digitalWrite(buzzerPin, LOW);
+  digitalWrite(ledPin, LOW);
+  Serial.begin(9600);
+}
+
+void loop() {
+  int eyeState = digitalRead(eyeSensorPin); // HIGH = Eye Open, LOW = Eye Closed
+
+  if (eyeState == LOW) {
+    if (!eyePreviouslyClosed) {
+      eyeClosedStart = millis(); // Start timing when eye first closes
+      eyePreviouslyClosed = true;
+    }
+
+    // If eyes closed for more than 2 seconds, trigger alarm
+    if (millis() - eyeClosedStart >= 2000) {
+      digitalWrite(buzzerPin, HIGH);
+      digitalWrite(ledPin, HIGH);
+      Serial.println("Drowsiness detected! Alert triggered.");
+    }
+  } else {
+    // Reset alert if eyes are open
+    digitalWrite(buzzerPin, LOW);
+    digitalWrite(ledPin, LOW);
+    eyePreviouslyClosed = false;
+  }
+
+  delay(100); // small delay to prevent bouncing
+}
